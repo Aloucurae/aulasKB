@@ -1,0 +1,16 @@
+FROM ubuntu:20.10 as code
+WORKDIR /app
+RUN apt-get update -y && apt-get install git -y
+RUN git clone https://github.com/KubeDev/api-conversao.git
+
+FROM node:14-alpine3.11 as base
+WORKDIR /app
+COPY --from=code /app/package*.json ./
+RUN npm i
+
+FROM node:14-alpine3.11 as production
+WORKDIR /app
+COPY --from=code /app ./
+COPY --from=base /app ./
+EXPOSE 8080
+CMD ["node","index.js"]
